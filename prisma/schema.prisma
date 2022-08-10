@@ -16,6 +16,8 @@ datasource db {
 
 model Example {
     id String @id @default(cuid())
+    name String?
+    exampleName String?
 }
 
 // Necessary for Next auth
@@ -62,3 +64,4 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+

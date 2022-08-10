@@ -1,6 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 import type { NextPage } from "next";
 import Head from "next/head";
+import Image from 'next/image';
 import { trpc } from "../utils/trpc";
+import { signIn, signOut, SessionProvider, getSession, useSession } from 'next-auth/react'
 
 type TechnologyCardProps = {
   name: string;
@@ -8,8 +11,35 @@ type TechnologyCardProps = {
   documentation: string;
 };
 
+type AuthButtons = {
+  children: string;
+  handler: () => void
+}
+
+const SignInDiscordHandler = () => {
+  signIn('discord');
+}
+
+const SignInHandler = () => {
+  signIn();
+}
+
+const SignOutHandler = () => {
+  signOut();
+}
+
+const AuthButton = ({ children, handler }: AuthButtons) => {
+  return (
+    <button onClick={handler} className='m-4 rounded-lg leading-normal font-extrabold text-gray-700 bg-purple-300 p-4'>{children}</button>
+  )
+}
+
 const Home: NextPage = () => {
-  const hello = trpc.useQuery(["example.hello", { text: "from tRPC" }]);
+  const hello = trpc.useQuery(["example.hello", { text: "from Somewhere" }]);
+  const session = trpc.useQuery(["question.getSession"]);
+  const src = session.data?.user.image;
+  const stuff = useSession();
+  console.log(stuff);
 
   return (
     <>
@@ -23,6 +53,18 @@ const Home: NextPage = () => {
         <h1 className="text-5xl md:text-[5rem] leading-normal font-extrabold text-gray-700">
           Create <span className="text-purple-300">T3</span> App
         </h1>
+
+        {!session.data ?
+          <><AuthButton handler={SignInDiscordHandler}>Sign In via Discord</AuthButton>
+          or
+            <AuthButton handler={SignInHandler}>Sign In Normally</AuthButton>
+          </> :
+          <><p>Hello There {session.data?.user.name}! Welcome back!</p>
+            <Image src={src!} alt="hello" width={50} height={50} />
+            <AuthButton handler={SignOutHandler}>Logout</AuthButton>
+          </>
+        }
+
         <p className="text-2xl text-gray-700">This stack uses:</p>
         <div className="grid gap-3 pt-3 mt-3 text-center md:grid-cols-2 lg:w-2/3">
           <TechnologyCard
